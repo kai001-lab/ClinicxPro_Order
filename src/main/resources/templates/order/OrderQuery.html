@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>訂單查詢</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="https://i.postimg.cc/brVLsP09/medical-symbol.png" type="image/x-icon"/>
+    <script src="https://kit.fontawesome.com/47b671abbd.js" crossorigin="anonymous"></script>
+    <style>
+        html, body {
+            background: #f0f4f8;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #1d3d5e;
+            font-weight: bold;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        .btn-search, .back-button {
+            background: #1d3d5e;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            width: 100%;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-search:hover, .back-button:hover {
+            background: #2c5c8f;
+            color: white;
+            text-decoration: none;
+        }
+
+        .btnAdd {
+            position: relative;
+            border: 2px solid #9d8c56;
+            border-radius: 48px;
+            color: #9d8c56;
+            font-size: 0.9rem;
+            padding: 8px 15px;
+            text-decoration: none;
+            overflow: hidden;
+            transition: 0.2s transform ease-in-out;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .btnAdd:after {
+            content: '';
+            display: block;
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            left: 0;
+            top: 0;
+            z-index: -1;
+            background-color: #9d8c56;
+            border-radius: 48px;
+            transform: translate(-100%, 0) rotate(10deg);
+            transform-origin: top left;
+            transition: 0.2s transform ease-out;
+        }
+
+        .btnAdd:hover:after {
+            transform: translate(0, 0);
+        }
+
+        .btnAdd:hover {
+            border: 2px solid transparent;
+            color: #FFFFFF;
+            transform: scale(1);
+        }
+
+        .error-message {
+            color: #dc3545;
+            margin-top: 10px;
+            display: none;
+        }
+        .back-button {
+            background: #1d3d5e;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            width: 100%;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .back-button:hover {
+            background: #2c5c8f;
+        }
+        .back-button a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            width: 100%;
+        }
+        .back-button {
+            background: #8b6d42;
+        }
+        .back-button:hover {
+            background: #9d8c56;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header-container">
+        <h2 style="color: #1d3d5e; margin: 0;">訂單查詢</h2>
+        <button type="button" class="btnAdd" onclick="autoFill()">
+            <i class="fa-solid fa-square-plus"></i> 一鍵帶入
+        </button>
+    </div>
+    <form action="/clinic/order/search" method="post">
+        <div class="form-group">
+            <label for="patientName">姓名</label>
+            <input type="text" class="form-control" id="patientName" name="patientName" required>
+        </div>
+        <div class="form-group">
+            <label for="patientIdCard">身分證號</label>
+            <input type="text" class="form-control" id="patientIdCard" name="patientIdCard" required>
+        </div>
+        <button type="submit" class="btn-search">查詢</button>
+    </form>
+       <button class="back-button"><a href="/clinic/Customer" class="">返回首頁</a></button>
+    <div id="error-message" class="error-message"></div>
+</div>
+
+<script>
+    function autoFill() {
+        document.getElementById('patientName').value = '王小明';
+        document.getElementById('patientIdCard').value = 'N123456789';
+    }
+</script>
+</body>
+</html>

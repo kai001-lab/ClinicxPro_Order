@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org/">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bootstrap 5模板</title>
+    <link rel="icon" href="https://i.postimg.cc/3W52J8FC/medical.png" type="image/x-icon" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+      rel="stylesheet"
+    />
+    <!-- dataTable -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Pacifico&family=Playwrite+DE+Grund:wght@100..400&family=Sofadi+One&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&display=swap");
+    </style>
+
+    <style>
+      .playfair-display {
+        font-family: "Playfair Display", serif;
+        font-optical-sizing: auto;
+        font-weight: weight;
+        font-style: normal;
+      }
+      .pacifico-regular {
+        font-family: "Pacifico", cursive;
+        font-weight: 400;
+        font-style: normal;
+      }
+      .dancing-script {
+        font-family: "Dancing Script", cursive;
+        font-optical-sizing: auto;
+        font-weight: weight;
+        font-style: normal;
+      }
+      body {
+        padding-top: 56px;
+        background-color: #f2f2f1;
+      }
+      /*#content {*/
+      /*  width: calc(90% - 250px);*/
+      /*  margin-left: 350px;*/
+      /*  !* margin-left: calc(20% - 250px); *!*/
+      /*  margin-top: 10px;*/
+      /*  padding: 20px;*/
+      /*  !* border: 5px solid red; *!*/
+      /*  height: 800px;*/
+      /*}*/
+
+      #sidebar {
+        height: calc(100vh - 56px);
+        width: 250px;
+        position: fixed;
+        top: 56px;
+        left: 0;
+        background-color: #eae4d4;
+        padding-top: 20px;
+        color: #22223b;
+        overflow-y: auto;
+      }
+      .list-group-item {
+        background-color: #eae4d4;
+        color: #22223b;
+        border: none;
+        padding: 0.5rem 1rem;
+      }
+
+      .navbar {
+        background-color: #1d3d5e !important;
+        font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+      }
+
+      .navbar-brand,
+      .nav-link {
+        color: white;
+      }
+      .navbar-brand:hover,
+      .navbar-brand:focus,
+      .nav-link:hover {
+        color: #9d8c56;
+      }
+      .sidebar-heading {
+        padding: 0.875rem 1.25rem;
+        font-size: 1.2rem;
+      }
+
+      .list-group-item:hover,
+      .list-group-item:focus {
+        color: white;
+        background-color: #1d3d5e;
+      }
+      /*
+      .sub-menu {
+        padding-left: 20px;
+      } */
+
+      .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+      }
+
+      /*以下是可拉式側邊欄的CSS程式碼*/
+      /*==============================*/
+      /* 在您现有的 style 标签中添加以下样式 */
+      #sidebar-toggle {
+        display: none;
+        position: fixed;
+        top: 65px;
+        left: 10px;
+        z-index: 1000;
+        background-color: #1d3d5e;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+      }
+
+      @media (max-width: 768px) {
+        #sidebar {
+          margin-left: -250px;
+          transition: margin 0.3s ease-in-out;
+        }
+
+        #sidebar.active {
+          margin-left: 0;
+        }
+
+        #sidebar-toggle {
+          display: block;
+        }
+
+        #content {
+          margin-left: 0;
+          width: 100%;
+          transition: margin 0.3s ease-in-out;
+        }
+
+        #content.sidebar-active {
+          margin-left: 250px;
+        }
+      }
+
+      /* 添加遮罩层样式 */
+      .sidebar-overlay {
+        display: none;
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 999;
+        top: 0;
+        left: 0;
+      }
+
+      .sidebar-overlay.active {
+        display: block;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- dataTable -->
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+    <!-- 導航欄Nbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+      <div class="container-fluid">
+        <a
+          class="navbar-brand fs-1 pacifico-regular"
+          style="color: #ffffff; margin-right: 100px; padding: 0"
+          href="#"
+          >ClinicxPro</a
+        >
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item" style="margin: 0 20px; margin-left: -50px">
+              <a
+                class="nav-link fs-4 .playfair-display"
+                aria-current="page"
+                href="#"
+                >首頁</a
+              >
+            </li>
+            <li class="nav-item" style="margin: 0 20px">
+              <a class="nav-link fs-4 .playfair-display" href="#">關於</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link fs-4 .playfair-display" href="#">聯繫我們</a>
+            </li>
+          </ul>
+          <div class="d-flex align-items-center">
+            <img
+              th:src="@{img/dogo.png}"
+              alt="用戶頭像"
+              class="avatar me-2"
+            />
+            <span class="text-white">使用者</span>
+          </div>
+        </div>
+      </div>
+    </nav>
+    <!-- 側邊欄Sidebar -->
+    <!-- 在 navbar 后面添加以下代码 -->
+    <button id="sidebar-toggle" class="btn">
+      <i class="fas fa-bars"></i>
+    </button>
+    <div class="sidebar-overlay"></div>
+    <div id="sidebar">
+      <div class="sidebar-heading">功能選單</div>
+      <div class="list-group list-group-flush">
+        <a
+          href="#"
+          class="list-group-item list-group-item-action"
+          data-bs-toggle="collapse"
+          data-bs-target="#leave-submenu"
+        >
+          <i class="fas fa-calendar-alt me-2"></i>
+          <span class="playfair-display">假單總覽</span>
+          <i class="fas fa-caret-down float-end"></i>
+        </a>
+        <div class="collapse" id="leave-submenu">
+          <div class="sub-menu">
+            <a href="#" class="list-group-item list-group-item-action"
+              >申請假單</a
+            >
+            <a href="#" class="list-group-item list-group-item-action"
+              >審核假單</a
+            >
+          </div>
+        </div>
+
+        <a
+          href="#"
+          class="list-group-item list-group-item-action"
+          data-bs-toggle="collapse"
+          data-bs-target="#employee-submenu"
+        >
+          <i class="fas fa-users me-2"></i>員工總覽
+          <i class="fas fa-caret-down float-end"></i>
+        </a>
+        <div class="collapse" id="employee-submenu">
+          <div class="sub-menu">
+            <a href="#" class="list-group-item list-group-item-action"
+              >員工列表</a
+            >
+            <a href="#" class="list-group-item list-group-item-action"
+              >新增員工</a
+            >
+          </div>
+        </div>
+
+        <a
+          href="#"
+          class="list-group-item list-group-item-action"
+          data-bs-toggle="collapse"
+          data-bs-target="#clinic-submenu"
+        >
+          <i class="fas fa-stethoscope me-2"></i>門診預約
+          <i class="fas fa-caret-down float-end"></i>
+        </a>
+        <div class="collapse" id="clinic-submenu">
+          <div class="sub-menu">
+            <a href="#" class="list-group-item list-group-item-action"
+              >預約管理</a
+            >
+            <a href="#" class="list-group-item list-group-item-action"
+              >醫生排班</a
+            >
+          </div>
+        </div>
+
+        <a
+          href="#"
+          class="list-group-item list-group-item-action"
+          data-bs-toggle="collapse"
+          data-bs-target="#surgery-submenu"
+        >
+          <i class="fas fa-procedures me-2"></i>手術預約
+          <i class="fas fa-caret-down float-end"></i>
+        </a>
+        <div class="collapse" id="surgery-submenu">
+          <div class="sub-menu">
+            <a href="#" class="list-group-item list-group-item-action"
+              >手術排程</a
+            >
+            <a href="#" class="list-group-item list-group-item-action"
+              >手術室管理</a
+            >
+          </div>
+        </div>
+
+        <a
+          :href="#"
+          class="list-group-item list-group-item-action"
+          data-bs-toggle="collapse"
+          data-bs-target="#order-submenu"
+        >
+          <i class="fas fa-shopping-cart me-2"></i>訂單總覽
+          <i class="fas fa-caret-down float-end"></i>
+        </a>
+        <div class="collapse" id="order-submenu">
+          <div class="sub-menu">
+            <a th:href="@{/Patient}" class="list-group-item list-group-item-action"
+              >患者資訊</a
+            >
+            <a th:href="@{/Order}" class="list-group-item list-group-item-action"
+              >訂單列表</a
+            >
+            <a th:href="@{/Customer}"
+               class="list-group-item list-group-item-action">顧客頁面</a>
+          </div>
+        </div>
+
+        <a
+          href="#"
+          class="list-group-item list-group-item-action"
+          data-bs-toggle="collapse"
+          data-bs-target="#inventory-submenu"
+        >
+          <i class="fas fa-boxes me-2"></i>庫存總覽
+          <i class="fas fa-caret-down float-end"></i>
+        </a>
+        <div class="collapse" id="inventory-submenu">
+          <div class="sub-menu">
+            <a href="#" class="list-group-item list-group-item-action"
+              >庫存列表</a
+            >
+            <a href="#" class="list-group-item list-group-item-action"
+              >庫存調整</a
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<!--    <script th:src="@{/js/axios.min.js}"></script>-->
+
+    <!-- Modal -->
+    <div class="modal fade" id="teamModal" tabindex="-1" aria-labelledby="teamModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header" style="background: #1d3d5e">
+            <h5 class="modal-title" id="teamModalLabel" style="color: #FFFFFF">團隊成員</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-4">
+            <div class="container">
+              <div class="card-container d-flex flex-wrap justify-content-center gap-4">
+                <!-- 成員卡片 會動態生成 -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <style>
+      .card-container {
+        perspective: 1000px;
+      }
+
+      .member-card {
+        width: 200px;
+        height: 280px;
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform 0.6s;
+        cursor: pointer;
+      }
+
+      .member-card.flipped {
+        transform: rotateY(180deg);
+      }
+
+      .card-front, .card-back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        border-radius: 15px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+      }
+
+      .card-front {
+        background: linear-gradient(145deg, #1d3d5e, #2a5683);
+        color: white;
+      }
+
+      .card-back {
+        background: white;
+        transform: rotateY(180deg);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      }
+
+      .member-img {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 1rem;
+      }
+    </style>
+
+    <script>
+      const members = [
+        {
+          name: "成員1",
+          title: "職稱1",
+          img: "/api/placeholder/120/120",
+          description: "描述1"
+        },
+        {
+          name: "成員2",
+          title: "職稱2",
+          img: "/api/placeholder/120/120",
+          description: "描述2"
+        },
+        {
+          name: "成員3",
+          title: "職稱3",
+          img: "/api/placeholder/120/120",
+          description: "描述3"
+        },
+        {
+          name: "成員4",
+          title: "職稱4",
+          img: "/api/placeholder/120/120",
+          description: "描述4"
+        },
+        {
+          name: "成員5",
+          title: "職稱5",
+          img: "/api/placeholder/120/120",
+          description: "描述5"
+        }
+      ];
+
+      document.addEventListener('DOMContentLoaded', function() {
+        // 修改原本的聯繫按鈕
+        const contactLink = document.querySelector('[data-bs-target="#exampleModal"]');
+        if (contactLink) {
+          contactLink.setAttribute('data-bs-target', '#teamModal');
+        }
+
+        // 生成卡片
+        const cardContainer = document.querySelector('.card-container');
+        members.forEach((member, index) => {
+          const card = `
+            <div class="member-card">
+                <div class="card-front">
+                    <i class="fas fa-user fa-3x mb-3"></i>
+                    <h5>點擊查看</h5>
+                </div>
+                <div class="card-back">
+                    <img src="${member.img}" alt="${member.name}" class="member-img">
+                    <h5 class="mb-2">${member.name}</h5>
+                    <p class="mb-1">${member.title}</p>
+                    <small>${member.description}</small>
+                </div>
+            </div>
+        `;
+          cardContainer.insertAdjacentHTML('beforeend', card);
+        });
+
+        // 卡片翻轉效果
+        document.querySelectorAll('.member-card').forEach((card, index) => {
+          setTimeout(() => {
+            card.classList.add('flipped');
+          }, index * 300);
+
+          card.addEventListener('click', () => {
+            card.classList.toggle('flipped');
+          });
+        });
+      });
+    </script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const content = document.getElementById('content');
+        const overlay = document.querySelector('.sidebar-overlay');
+
+        sidebarToggle.addEventListener('click', function() {
+          sidebar.classList.toggle('active');
+          if (content) content.classList.toggle('sidebar-active');
+          overlay.classList.toggle('active');
+        });
+
+        overlay.addEventListener('click', function() {
+          sidebar.classList.remove('active');
+          if (content) content.classList.remove('sidebar-active');
+          overlay.classList.remove('active');
+        });
+
+        /*以下是可拉式側邊欄的CSS程式碼*/
+        /*==============================*/
+
+        window.addEventListener('resize', function() {
+          if (window.innerWidth > 714) {
+            sidebar.classList.remove('active');
+            if (content) content.classList.remove('sidebar-active');
+            overlay.classList.remove('active');
+          }
+        });
+      });
+    </script>
+
+  </body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>訂單確認</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 引入 Stripe JS SDK -->
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        .confirmation-container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .order-details {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        .detail-row {
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .proceed-button {
+            background: #1d3d5e;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            width: 100%;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .proceed-button:hover {
+            background: #2c5c8f;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 10px;
+            color: #666;
+        }
+        .error-message {
+            color: #dc3545;
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #ffebee;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="confirmation-container">
+    <h2 style="color: #1d3d5e; text-align: center;">訂單確認</h2>
+
+    <div class="order-details">
+        <div class="detail-row">
+            <span>訂單編號：</span>
+            <span th:text="${order.orderNumber}"></span>
+        </div>
+        <div class="detail-row">
+            <span>姓名：</span>
+            <span th:text="${order.patient.patientName}"></span>
+        </div>
+        <div class="detail-row">
+            <span>療程項目：</span>
+            <span th:text="${order.treatment.treatmentName}"></span>
+        </div>
+        <div class="detail-row">
+            <span>看診醫師：</span>
+            <span th:text="${order.doctorName}"></span>
+        </div>
+        <div class="detail-row">
+            <span>費用：</span>
+            <span th:text="'TWD ' + ${order.treatment.price}"></span>
+        </div>
+    </div>
+
+    <button id="checkout-button" class="proceed-button">確認付款</button>
+    <div id="loading" class="loading">處理中，請稍候...</div>
+    <div id="error-message" class="error-message"></div>
+</div>
+
+<script th:inline="javascript">
+    // 獲取訂單數據
+    const orderNumber =  order.orderNumber;
+    const stripePublicKey = stripePublicKey;
+
+    // 初始化 Stripe
+    const stripe = Stripe(stripePublicKey);
+
+    document.getElementById('checkout-button').addEventListener('click', async function() {
+        const button = this;
+        const loading = document.getElementById('loading');
+        const errorDisplay = document.getElementById('error-message');
+
+        try {
+            // 禁用按鈕，顯示載入中
+            button.disabled = true;
+            loading.style.display = 'block';
+            errorDisplay.style.display = 'none';
+
+            // 發送請求到後端創建支付會話
+            const response = await fetch('/clinic/order/create-checkout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    orderNumber: orderNumber
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                throw new Error(data.error);
+            }
+
+            // 重定向到 Stripe 的支付頁面
+            if (data.sessionUrl) {
+                window.location.href = data.sessionUrl;
+            } else {
+                throw new Error('無法獲取支付頁面');
+            }
+
+        } catch (error) {
+            // 顯示錯誤信息
+            errorDisplay.textContent = error.message || '處理付款時發生錯誤，請稍後再試';
+            errorDisplay.style.display = 'block';
+
+            // 重新啟用按鈕
+            button.disabled = false;
+            loading.style.display = 'none';
+        }
+    });
+</script>
+</body>
+</html>

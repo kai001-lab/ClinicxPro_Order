@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org/">
+<head>
+    <meta charset="UTF-8"/>
+    <title>訂單管理頁面</title>
+    <!--    我的font-awesome-->
+    <script
+            src="https://kit.fontawesome.com/47b671abbd.js"
+            crossorigin="anonymous"
+    ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+    <!--引用SweetAlert2.js-->
+    <!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/6.10.3/sweetalert2.js" type="text/javascript"></script>-->
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <link rel="icon" th:src="@{/img/ClinicxPro.png}">
+    <style>
+        #content {
+            /*width: calc(90% - 250px);*/
+            margin-left: 350px;
+            /* margin-left: calc(20% - 250px); */
+            margin-top: 10px;
+            padding: 20px;
+            /* border: 5px solid red; */
+            height: 800px;
+        }
+
+        /*#content {*/
+        /*    margin: 0 auto;*/
+        /*    padding: 20px;*/
+        /*    margin-left: 300px;*/
+        /*}*/
+
+        /*通知付款按鈕*/
+        .btnInfo {
+            position: relative;
+            /*min-width: 125px;*/
+            background: #FFFFFF;
+            background: #f2f2f1;
+            border: 2px solid red;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .btnInfo div,
+        .btnInfo:before {
+            /*font-size: 1em;*/
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all .3s ease-in-out;
+            padding: 5px;
+            /*padding: 10px 20px;*/
+        }
+
+        .btnInfo:before {
+            content: attr(data-hover);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            opacity: 0;
+            transform: translate(-100%, 0);
+        }
+
+        .btnInfo:hover div {
+            opacity: 0;
+            transform: translate(100%, 0)
+        }
+
+        .btnInfo:hover:before {
+            opacity: 1;
+            transform: translate(0, 0);
+        }
+
+        .btn-primary,
+        .btn-danger {
+            background-color: #007bff; /* Bootstrap 預設的主要顏色 */
+            opacity: 0.9; /* 設置透明度，0.6 表示 60% 不透明度 */
+        }
+
+        .btn-kai {
+            background-color: #3a6ea5;
+        }
+
+        .btnAdd,
+        .btnAdd:focus {
+            position: relative;
+            z-index: 0;
+            /*min-width: 200px;*/
+            border: 2px solid currentColor;
+            border-radius: 48px;
+            color: #FF0FF0;
+            color: #9d8c56;
+            font-size: 1rem;
+            text-align: center;
+            text-decoration: none;
+            overflow: hidden;
+            transition: 0.2s transform ease-in-out;
+            will-change: transform;
+            padding: 10px 20px;
+        }
+
+        .btnAdd:after {
+            content: '';
+            display: block;
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            left: 0;
+            top: 0;
+            z-index: -1;
+            background-color: #ff0ff0;
+            background-color: #9d8c56;
+            border-radius: 3rem;
+            transform: translate(-100%, 0) rotate(10deg);
+            transform-origin: top left;
+            transition: 0.2s transform ease-out;
+            will-change: transform;
+        }
+
+        .btnAdd:hover:after {
+            transform: translate(0, 0);
+        }
+
+        .btnAdd:hover {
+            border: 2px solid transparent;
+            color: #FFFFFF;
+            /*會造成樣式模糊 -> 改變字體大小*/
+            /*transform: scale(1.05);*/
+            transform: scale(1);
+            will-change: transform;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{display/Model}"></div>
+<main>
+    <div class="container-fluid  col-md-10" id="content">
+        <!-- 下面是我的功能-->
+        <div class="page-inner">
+            <div
+                    class="card-header col-auto col-10 col-lg-10 mt-3 p-2 rounded border"
+                    style="
+              margin-top: 2%;
+              background-color: #1d3d5e;
+              color: #f2f2f1;
+              border: 1px solid gray;
+            "
+            >
+                <div class="d-flex align-items-center">
+                    <h4 class="card-title playfair-display fs-4 border rounded p-2"
+                        style="background-color: #3a6ea5; color: #ffffff;">訂單管理</h4>
+                    <button
+                            id="addBtn"
+                            class="btnAdd ms-auto"
+                    >
+                        <!--                            class="btn btn-primary btn-round btn-kai rounded ms-auto"-->
+                        <i class="fa-solid fa-square-plus"></i> 新增訂單
+                    </button>
+                </div>
+            </div>
+            <!-- 隱藏的表單 -->
+            <form
+                    id="deleteForm"
+                    method="POST"
+                    action="/clinic/deleteOrder"
+                    style="display: none"
+            >
+                <input name="orderNumber" id="deleteInput"/>
+                <input type="hidden" name="action" value="delete"/>
+            </form>
+            <!-- 搜尋區域 -->
+            <!-- 搜尋區域 -->
+            <!-- 搜尋區域 -->
+            <div class="row mt-2">
+                <div class="col-auto col-10 col-lg-10 p-2 rounded" style="width: 83%;margin-left: 3px">
+                    <div class="card" style="background-color: #f2f2f1">
+                        <div class="card-body">
+                            <!--                            <h5 class="card-title mb-4">搜尋訂單</h5>-->
+                            <div class="row g-3">
+                                <!-- 關鍵字搜尋 -->
+                                <div class="col-md-4">
+                                    <div class="input-group">
+                                        <button class="btn btn-outline-primary dropdown-toggle" type="button"
+                                                id="dropdownMenuButton1" data-bs-toggle="dropdown"
+                                                aria-expanded="false">
+                                            關鍵字搜尋
+                                        </button>
+                                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                            <li><a class="dropdown-item choose" data-searchtype="patientName">患者</a>
+                                            </li>
+                                            <li><a class="dropdown-item choose"
+                                                   data-searchtype="treatmentItem">療程項目</a></li>
+                                        </ul>
+                                        <input type="text" class="form-control" id="Search" placeholder="輸入搜尋...">
+                                        <button class="btn btn-outline-secondary" type="button" id="SearchBtn">
+                                            <i class="fa-solid fa-magnifying-glass"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- 療程進度搜尋 -->
+                                <div class="col-md-3">
+                                    <div class="input-group">
+                                        <label class="input-group-text" for="threapyStatus">療程進度</label>
+                                        <select id="threapyStatus" class="form-select">
+                                            <option value="0">未完成</option>
+                                            <option value="1">已完成</option>
+                                        </select>
+                                        <button class="btn btn-outline-secondary" type="button" id="SearchByStatusBtn">
+                                            <i class="fa-solid fa-magnifying-glass"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- 付款狀態搜尋 -->
+                                <div class="col-md-3">
+                                    <div class="input-group">
+                                        <label class="input-group-text" for="payStatus">付款狀態</label>
+                                        <select id="payStatus" class="form-select">
+                                            <option value="0">未付款</option>
+                                            <option value="1">已付款</option>
+                                        </select>
+                                        <button class="btn btn-outline-secondary" type="button" id="SearchByStatusBtn2">
+                                            <i class="fa-solid fa-magnifying-glass"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- 日期區間搜尋 -->
+                                <div class="col-md-8">
+                                    <div class="input-group">
+                                        <span class="input-group-text">日期區間</span>
+                                        <input type="date" class="form-control" id="startDate"
+                                               placeholder="請選擇時間...">
+                                        <span class="input-group-text">至</span>
+                                        <input type="date" class="form-control" id="endDate"
+                                               placeholder="請選擇時間...">
+                                        <button class="btn btn-outline-secondary" type="button" id="SearchBtn2">
+                                            <i class="fa-solid fa-magnifying-glass"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <button id="returnAllOrders" class="btn btn-secondary">返回全部訂單</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!---------------------------------------------------------------------------------------------------------------------------->
+            <!-- 下面是表格 -->
+            <!-- 下面是表格 -->
+            <!-- 下面是表格 -->
+            <div id="" class="row">
+                <div class="col-auto col-10 col-lg-10 mt-2">
+                    <div class="card" style="background-color: #f2f2f1">
+                        <div class="table-responsive">
+                            <table
+                                    id="orderList"
+                                    class="display table table-striped table-hover w-100"
+                                    style="padding-bottom: 0;margin-bottom: 0"
+                            >
+                                <thead>
+                                <tr>
+                                    <th class="border text-center">訂單編號</th>
+                                    <th class="border text-center">患者</th>
+                                    <th class="border text-center">療程項目</th>
+                                    <th class="border text-center">療程進度</th>
+                                    <th class="border text-center">付款狀態</th>
+                                    <th class="border text-center">訂單產生日期</th>
+                                    <th class="border text-center" style="width: 14%">操作</i>
+                                    </th>
+                                    <!--                                    <th class="border text-center" style="width: 14%"><i class="fa-solid fa-wrench"></i>-->
+                                    <!--                                    </th>-->
+                                    <!-- <th id="upTime">訂單修改時間</th> -->
+                                </tr>
+                                </thead>
+                                <tbody id="orderTbody">
+                                <!--寫ajax  -->
+
+                                <!--寫ajax  -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!--                    下面是分頁的部分-->
+
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination  justify-content-end mt-3 " id="pagination">
+                            <li class="page-item " id="prevPage">
+                                <a class="page-link" href="#" tabindex="-1">上一頁</a>
+                            </li>
+                            <!-- JS動態插入 頁數 -->
+                            <!--.............-->
+                            <!-- JS動態插入 頁數 -->
+                            <li class="page-item" id="nextPage">
+                                <a class="page-link" href="#">下一頁</a>
+                            </li>
+                        </ul>
+                    </nav>
+                    <div class="text-end" id="pageInfo"></div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<!--這裏面放我的 Modal -->
+<!-- Modal1新增訂單 -->
+<div id="addOrderModal" class="modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: #1d3d5e">
+                <h5 class="modal-title text-light">新增訂單</h5>
+                <button
+                        id="addVal"
+                        class="btnAdd ms-auto text-light"
+                        style="background: #9d8c56"
+                >
+                    一鍵帶入
+                </button>
+                <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
+                ></button>
+            </div>
+            <div class="modal-body">
+                <form id="OrderForm" action="/clinic/addOrder" method="post">
+                    <input type="hidden" name="action" value="add"/>
+
+                    <div class="form-group">
+                        <label for="patientName">患者名稱 :</label>
+                        <input
+                                id="OrderName"
+                                name="patientName"
+                                type="text"
+                                class="form-control"
+                                placeholder="請輸入患者姓名"
+                                required
+                        />
+                        <button type="button" class="btn btn-outline-primary mt-2" id="checkPatient">檢查</button>
+                        <span id="patientCheckResult" class="fs-6 form-text text"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="treatmentItem">療程內容 :</label>
+                        <select
+                                name="treatmentItem"
+                                class="form-select form-control"
+                                id="OrdertreatmentContent"
+                                required
+                        >
+                            <option value="">請選擇療程</option>
+                            <!--                            <option>雷射除毛</option>-->
+                            <!--                            <option>玻尿酸</option>-->
+                            <!--                            <option>水飛梭</option>-->
+                            <!--                            <option>音波拉提</option>-->
+                            <!--                            <option>皮秒雷射</option>-->
+                            <!--                            <option>雙眼皮手術</option>-->
+                            <!--                            <option>隆鼻</option>-->
+                            <!--                            <option>抽脂</option>-->
+                            <!--                            <option>隆乳</option>-->
+                            <!--                            <option>痘疤，除斑治療</option>-->
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="threapyStatus">療程狀況 :</label>
+                        <select
+                                name="threapyStatus"
+                                class="form-select form-control"
+                                id="OrdertreatmentStatus"
+                        >
+                            <option value="0">未完成</option>
+                            <option value="1">已完成</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="doctorName">醫師名稱 :</label>
+                        <select
+                                name="doctorName"
+                                class="form-select form-control"
+                                id="OrderdoctorSelect"
+                                required
+                        >
+                            <option value="郭紹威">郭紹威</option>
+                            <option value="陳柏惟">陳柏惟</option>
+                            <option value="徐昀愷">徐昀愷</option>
+                            <option value="林育詳">林育詳</option>
+                            <option value="李功堯">李功堯</option>
+                            <option value="袁佑召">袁佑召</option>
+                            <option value="李添玟">李添玟</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="quote">價格 :</label>
+                        <input
+                                id="OrderPrice"
+                                name="quote"
+                                type="number"
+                                step="0.01"
+                                class="form-control"
+                                placeholder=""
+                                readonly
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="payStatus">付款狀態 :</label>
+                        <select
+                                name="payStatus"
+                                class="form-select form-control"
+                                id="OrderpayStatus"
+                        >
+                            <option value="0">未付款</option>
+                            <option value="1">已付款</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="payTool">付款方式 :</label>
+                        <select
+                                class="form-select form-control"
+                                id="OrderpaymentMethod"
+                                name="payTool"
+                        >
+                            <option value="">無</option>
+                            <option value="匯款">匯款</option>
+                            <option value="信用卡">信用卡</option>
+                            <option value="現金">現金</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="payDate">付款日期 :</label>
+                        <input
+                                id="OrderpaymentDate"
+                                name="payDate"
+                                type="date"
+                                class="form-control"
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="orderDate">訂單產生日期 :</label>
+                        <input
+                                id="OrderorderDate"
+                                name="orderDate"
+                                type="date"
+                                class="form-control"
+                                th:readonly="true"
+                                required
+                        />
+                    </div>
+
+                    <div
+                            class="card-action"
+                            style="display: flex; justify-content: center"
+                    >
+                        <button
+                                type="submit"
+                                id="upConfirmBtn"
+                                class="btn btn-success mt-2"
+                                style="margin-right: 20px"
+                        >
+                            新增訂單
+                        </button>
+                        <!--                        <button-->
+                        <!--                                type="button"-->
+                        <!--                                id="CancelBtn"-->
+                        <!--                                class="btn btn-danger mt-2"-->
+                        <!--                        >-->
+                        <!--                            取消新增-->
+                        <!--                        </button>-->
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!--MOdal2修改訂單 -->
+<div id="upOrderModal" class="modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: #1d3d5e">
+                <h5 class="modal-title text-light">修改訂單</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="upOrderForm">
+                    <div class="form-group">
+                        <label for="upOrderNumber">訂單編號：</label>
+                        <input type="text" class="form-control" id="upOrderNumber" name="orderNumber" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="upOrderName">患者名稱：</label>
+                        <input type="text" class="form-control" id="upOrderName" name="patientName" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="upTreatmentItem">療程內容：</label>
+                        <select class="form-control" id="upTreatmentContent" name="treatmentItem" required>
+                            <!-- 選項將通過 JavaScript 動態填充 -->
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="upTherapyStatus">療程狀況：</label>
+                        <select class="form-control" id="upTherapyStatus" name="therapyStatus" required>
+                            <option value="0">未完成</option>
+                            <option value="1">已完成</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="upDoctorName">醫師名稱：</label>
+                        <select class="form-control" id="upDoctorName" name="doctorName" required>
+                            <option value="郭紹威">郭紹威</option>
+                            <option value="陳柏惟">陳柏惟</option>
+                            <option value="徐昀愷">徐昀愷</option>
+                            <option value="林育詳">林育詳</option>
+                            <option value="李功堯">李功堯</option>
+                            <option value="袁佑召">袁佑召</option>
+                            <option value="李添玟">李添玟</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="upPrice">價格 :</label>
+                        <input
+                                id="upOrderPrice"
+                                name="upPrice"
+                                type="number"
+                                step="0.01"
+                                class="form-control"
+                                placeholder=""
+                                readonly
+                        />
+                    </div>
+                    <div class="form-group">
+                        <label for="upPayStatus">付款狀態：</label>
+                        <select class="form-control" id="upPayStatus" name="payStatus" required>
+                            <option value="0">未付款</option>
+                            <option value="1">已付款</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="upPayTool">付款方式：</label>
+                        <select class="form-control" id="upPayTool" name="payTool" required>
+                            <option value="無">無</option>
+                            <option value="匯款">匯款</option>
+                            <option value="信用卡">信用卡</option>
+                            <option value="現金">現金</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="upPayDate">付款日期：</label>
+                        <input type="date" class="form-control" id="upPayDate" name="payDate">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="upOrderDate">訂單產生日期：</label>
+                        <input type="date" class="form-control" id="upOrderDate" name="orderDate" readonly>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="saveUpOrder">保存修改</button>
+                <button type="button" class="btn btn-danger" id="deleteOrderBtn">刪除訂單</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--===========================================下面是我的功能=====================================-->
+
+<script>
+    //==============================================Page=================================
+    $(document).ready(function () {
+
+        //一開始傳page給後端 -> 從0開始
+        let currentPage = 0;
+        const pageSize = 10;
+        //儲存搜尋條件 避免搜尋後使用分頁功能時發生錯誤 !!
+        let searchParams = null;
+
+        $('#returnAllOrders').on('click', function () {
+            searchParams = '';
+            // currentPage = 0;
+            axios.get('findOrdersByPage')
+                .then(response => {
+                    const data = response.data;
+                    TableHTML(data.content);
+                    Pagination(data);
+                })
+                .catch(error => console.error('親!沒有拿到資料喔 QQ', error));
+        })
+
+        //%%%%%% 跟後端取得資料 => 再呼叫 1.表單資料師生成 & 2.頁面控制的 function %%%%%%
+        function loadOrders(page) {
+            let url = 'findOrdersByPage';
+            let params = {page: page, size: pageSize};
+
+            //如果存在搜尋條件 => 根據搜啥得到啥
+            if (searchParams) {
+                if (searchParams.startDate || searchParams.endDate) {
+                    url = 'findOrdersByDateRange';
+                } else {
+                    url = 'findOrdersBySerach';
+                }
+                params = {...params, ...searchParams};
+            }
+
+            // axios.get(`findOrdersByPage?page=${page}&size=${pageSize}`)
+            //根據不同搜尋條件回傳不同的結果
+            axios.get(url, {params: params})
+                .then(response => {
+                    const data = response.data;
+                    TableHTML(data.content);
+                    Pagination(data);
+                })
+                .catch(error => console.error('親!沒有拿到資料喔 QQ', error));
+        }
+
+        //分頁的控制
+        function Pagination(pageData) {
+            const $pagination = $('#pagination');
+            const $prevPage = $('#prevPage');
+            const $nextPage = $('#nextPage');
+
+            currentPage = pageData.number;
+            const totalPages = pageData.totalPages;
+
+            // 清除現有的頁碼按鈕
+            //除了 prevPage 跟 nextPage 以外的
+            $pagination.find('li.page-item:not(#prevPage):not(#nextPage)').remove();
+
+            // 更新上一頁按鈕
+            if (pageData.first) {
+                $prevPage.addClass('disabled');
+            } else {
+                $prevPage.removeClass('disabled');
+            }
+            // 更新下一頁按鈕
+            // 如果是最後一頁或總頁數小於等於1，禁用下一頁
+            if (pageData.last || totalPages <= 1) {
+                $nextPage.addClass('disabled');
+            } else {
+                $nextPage.removeClass('disabled');
+            }
+
+            // 根據總頁數生成按鈕
+            if (totalPages > 1) {
+                const start = Math.max(0, currentPage - 2);
+                const end = Math.min(totalPages - 1, currentPage + 2);
+
+                for (let i = start; i <= end; i++) {
+                    const $pageItem = $('<li>').addClass('page-item');
+                    const $pageLink = $('<a>').addClass('page-link').attr('href', '#').text(i + 1);
+
+                    if (i === currentPage) {
+                        $pageItem.addClass('active');
+                    }
+
+                    $pageLink.on('click', (e) => {
+                        e.preventDefault();
+
+                        loadOrders(i);
+
+                    });
+
+                    $pageItem.append($pageLink);
+                    $nextPage.before($pageItem);
+                }
+            }
+            // 更新頁面信息
+            $('#pageInfo').text(`第 ${currentPage + 1} 頁，共 ${totalPages} 頁`);
+        }
+
+        //放在初始化物件後 ->  currentPage
+        // 一開始載入表格資料
+        loadOrders(currentPage);
+
+// 綁定上一頁和下一頁的點擊事件
+        $('#prevPage').on('click', function (e) {
+            e.preventDefault();
+            if (!$(this).hasClass('disabled')) {
+                loadOrders(currentPage - 1);
+            }
+        });
+
+        $('#nextPage').on('click', function (e) {
+            e.preventDefault();
+            if (!$(this).hasClass('disabled')) {
+                loadOrders(currentPage + 1);
+            }
+        });
+
+
+        //表格產生資料的 function ver2
+        function TableHTML(orders) {
+            let html = "";
+            orders.forEach((order) => {
+                let orderDate = new Date(order.orderDate);
+                let formattedDate = orderDate.toLocaleDateString('zh-TW', {timeZone: 'Asia/Taipei'});
+                //可讓生成時依照狀態變色 😍
+                const ThreapyColor = order.threapyStatus == 1 ? "color:green" : "color:red";
+                const PayColor = order.payStatus == 1 ? "color:green" : "color:red";
+                const btnDisplay = order.payStatus == 1 ? "display:none" : "";
+                const payBtn = order.payStatus == 1 ? `<td class="border text-center" style="color:green"><i class="fas fa-dollar-sign mr-1"></i>已付款</td>` : `<td class="border text-center"><button class="btnInfo btnSendMail" data-hover="通知付款" style="color: red" data-order="${order.orderNumber}" data-email="${order.patient.patientEmail}"><div><i class="fas fa-dollar-sign mr-1"></i>未付款</div></button></td>`;
+
+                html += `<tr>
+                <td class="border text-center">${order.orderNumber}</td>
+                <td class="border text-center">${order.patient.patientName}</td>
+                <td class="border text-center">${order.treatment.treatmentName}</td>
+                <td class="border text-center " style="${ThreapyColor}">${order.threapyStatus == 1 ? "已完成" : "未完成"}</td>
+                ${payBtn}
+                <td class="border text-center">${formattedDate}</td>
+                <td class="border  text-center">
+                <button class="btnAdd btn-update"  data-order='${JSON.stringify(order)}'><i class="fa-solid fa-wrench"
+                      >編輯訂單</i></button>
+                </td>
+                </tr>`;
+            });
+            $("#orderTbody").html(html);
+        }
+
+        // <td class="border text-center "><button class="btnInfo" ${btnHover} style="${PayColor}"><div><i class="fas fa-dollar-sign mr-1"></i>${order.payStatus == 1 ? "已付款" : "未付款"}</div></button></td>
+        // <td class="border text-center "><button class="btnInfo" data-hover="通知付款" style="${PayColor}"><div><i class="fas fa-dollar-sign mr-1"></i>未付款</div></button></td>
+        // <td class="border text-center " style="${PayColor}">${order.payStatus == 1 ? "已付款" : "未付款"}</td>
+        //                     <button class="btn btn-success btn-pay " style="${btnDisplay}"
+        //         data-ordernumber="${order.orderNumber}">
+        //     付款
+        // </button>
+
+        // //    寄信功能༼ つ ◕_◕ ༽つ༼ つ ◕_◕ ༽つ༼ つ ◕_◕ ༽つ
+        // $(document).on('click', '.btnSendMail', function () {
+        //     const email = $(this).data('email');
+        //     swal({
+        //         title: '您確定要寄送付款通知嗎?',
+        //         // text: '您確定要發送付款通知嗎?',
+        //         icon: "info",
+        //         buttons: true,
+        //         dangerMode: true,
+        //     }).then((willDelete) => {
+        //         if (willDelete) {
+        //             axios.post(`/clinic/order/sendEmail`, {email: email})
+        //                 .then(function (response) {
+        //                     console.log("寄送成功");
+        //                     swal({
+        //                         title: "寄送成功!",
+        //                         icon: "success",
+        //                     });
+        //                 })
+        //                 .catch(function (error) {
+        //                     console.error('寄送信件時發生錯誤:', error);
+        //                     swal({
+        //                         title: "寄送失敗,發生錯誤!",
+        //                         text: "",
+        //                         icon: "error",
+        //                         buttons: true,
+        //                         dangerMode: true,
+        //                     })
+        //                 });
+        //         }
+        //     });
+        //     // if (confirm('確定要發送通知嗎?')) {
+        //     //     // axios.post(`/clinic/order/sendEmail?email=${email}`)
+        //     //     axios.post(`/clinic/order/sendEmail`, {email: email})
+        //     //         .then(function (reponse) {
+        //     //             console.log("寄送成功");
+        //     //         })
+        //     //         .catch(function (error) {
+        //     //             console.error('寄送信件時發生錯誤:', error);
+        //     //         })
+        //     // } else {
+        //     //     alert('取消發送');
+        //     // }
+        // })
+        //
+        // //    寄信功能༼ つ ◕_◕ ༽つ༼ つ ◕_◕ ༽つ༼ つ ◕_◕ ༽つ
+
+        // < !--下拉選單的js & 搜尋的功能-- >
+        // < !--下拉選單的js & 搜尋的功能-- >
+        // < !--下拉選單的js & 搜尋的功能-- >
+
+        // 搜尋選單字體改變
+        let SearchType;
+        $(".choose").on("click", function () {
+            let BtnText = $(this).text();
+            $("#dropdownMenuButton1").text(BtnText);
+            SearchType = $(this).data('searchtype');
+        });
+        // 單項搜尋功能
+        // 單項搜尋功能
+        $('#SearchBtn').on('click', function () {
+            let input = $('#Search').val().trim();
+
+            if (!SearchType) {
+                alert("選擇搜尋條件 😒😒")
+                return;
+            }
+            // 每次搜尋重置 !!!
+            // 每次搜尋重置 !!!
+            // 每次搜尋重置 !!!
+            currentPage = 0;
+            searchParams = {[SearchType]: input};
+            loadOrders(currentPage);
+        })
+        // 綁定療程進度搜尋按鈕
+        $('#SearchByStatusBtn').on('click', function () {
+            let threapyStatus = $('#threapyStatus').val(); // 療程進度
+            currentPage = 0;
+            searchParams = {threapyStatus: threapyStatus}; // 設置搜尋條件
+            loadOrders(currentPage);
+        });
+        // 綁定付款狀態搜尋按鈕
+        $('#SearchByStatusBtn2').on('click', function () {
+            let payStatus = $('#payStatus').val(); // 付款狀態
+            currentPage = 0;
+            searchParams = {payStatus: payStatus}; // 設置搜尋條件
+            loadOrders(currentPage);
+        });
+
+        // 日期區間搜尋功能
+        // 日期區間搜尋功能
+        $('#SearchBtn2').on('click', function () {
+            let startDate = $('#startDate').val();
+            let endDate = $('#endDate').val();
+
+            //兩個都要選擇
+            if (!startDate || !endDate) {
+                alert("請選擇完整的日期區間");
+                return;
+            }
+            // 確保結束日期不早於開始日期 ❤️
+            if (new Date(endDate) < new Date(startDate)) {
+                alert("結束日期不能早於開始日期!!!");
+                return;
+            }
+            // 每次搜尋重置 !!!
+            // 每次搜尋重置 !!!
+            // 每次搜尋重置 !!!
+            currentPage = 0;
+            searchParams = {startDate: startDate, endDate: endDate};
+            loadOrders(currentPage);
+        });
+
+        // =====================================================新增相關======================================
+        // 儲存檢查過的患者ID
+        let currentPatientId = null;
+        // 檢查患者存在與否
+        $('#checkPatient').on('click', function () {
+            const patientName = $('#OrderName').val();
+            if (patientName) {
+                checkPatient(patientName);
+            } else {
+                $('#patientCheckResult').text('請輸入患者姓名').addClass('text-danger');
+            }
+        });
+
+        // 檢查患者函數 1.檢查換患者存在與否 2.給予患者ID checkPatient
+        function checkPatient(patientName) {
+            axios.get(`/clinic/api/orders/check?patientName=${patientName}`)
+                .then(function (response) {
+                    if (response.data.exists) {
+                        $('#patientCheckResult').text('患者存在').removeClass('text-danger').addClass('text-success');
+                        currentPatientId = response.data.patientId;
+                        $('#addBtn').prop('disabled', false); // 啟用新增按鈕
+                    } else {
+                        $('#patientCheckResult').text('患者不存在').removeClass('text-success').addClass('text-danger');
+                        currentPatientId = null;
+                        $('#addBtn').prop('disabled', true); // 禁用新增按鈕
+                    }
+                })
+                .catch(function (error) {
+                    console.error('檢查患者時發生錯誤:', error);
+                    $('#patientCheckResult').text('此名患者不存在').addClass('text-danger');
+                    currentPatientId = null;
+                    $('#addBtn').prop('disabled', true); // 禁用新增按鈕
+                });
+        }
+
+        // 獲取所有療程
+        axios.get('/clinic/api/orders/treatments')
+            .then(function (response) {
+                const treatments = response.data;
+                const select = $('#OrdertreatmentContent');
+                const upSelect = $('#upTreatmentContent');
+                //新增表單
+                treatments.forEach(function (treatment) {
+                    select.append($('<option>', {
+                        value: treatment.treatmentId,
+                        text: treatment.treatmentName,
+                        'data-price': treatment.price
+                    }));
+                });
+                //修改表單
+                treatments.forEach(function (treatment) {
+                    upSelect.append($('<option>', {
+                        value: treatment.treatmentId,
+                        text: treatment.treatmentName,
+                        'data-price': treatment.price
+                    }));
+                });
+            })
+            .catch(function (error) {
+                console.error('獲取療程失敗:', error);
+            });
+
+        // 當選擇改變時更新價格  -----新增
+        $('#OrdertreatmentContent').change(function () {
+            const selectedOption = $(this).find('option:selected');
+            const price = selectedOption.data('price');
+            $('#OrderPrice').val(price);
+        });
+        // 當選擇改變時更新價格 ------修改
+        $('#upTreatmentContent').change(function () {
+            const selectedOption = $(this).find('option:selected');
+            const price = selectedOption.data('price');
+            $('#upOrderPrice').val(price);
+        });
+
+        // 一鍵帶入
+        $("#addVal").on("click", function () {
+            // 帶入的值
+            let testData = {
+                name: "王小明",
+                treatmentContent: "T008",
+                doctorName: "郭紹威"
+            };
+            //帶入值
+            $("#OrderName").val(testData.name);
+            $("#OrderdoctorSelect").val(testData.doctorName);
+            //改成觸發選擇 => 可以自動帶入價格
+            $("#OrdertreatmentContent").val(testData.treatmentContent).trigger('change');
+            // $("#OrdertreatmentContent").val(testData.treatmentContent);
+            // $("#OrderPrice").val(price);
+            // 檢查患者
+            checkPatient(testData.name);
+        });
+
+        //新增訂單按鈕
+        $('body').on("click", "#addBtn", function () {
+            //訂單日期自動帶值
+            const options = {year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Asia/Taipei'};
+            const today = new Intl.DateTimeFormat('zh-TW', options).format(new Date());
+            const formattedDate = today.split('/').join('-'); // 將 / 替換為 -
+            $("#OrderorderDate").val(formattedDate);
+
+            $("#addOrderModal").modal("show");
+
+            //可能會跳重複綁定事件的錯誤
+            $("#OrderForm").off("submit");
+            //提交表單
+            $("#OrderForm").on("submit", function (e) {
+                e.preventDefault();
+
+                swal({
+                    title: "確定要新增嗎？",
+                    text: "",
+                    icon: "info",
+                    buttons: true,
+                    dangerMode: true,
+                })
+                    .then((willDelete) => {
+                        if (willDelete) {
+                            if (!currentPatientId) {
+                                swal({
+                                    title: "請先檢查患者是否存在！",
+                                    icon: "",
+                                });
+                                return;
+                            }
+                            let formData = {
+                                orderNumber: "",
+                                patient: {
+                                    patientId: currentPatientId
+                                },
+                                treatment: {
+                                    treatmentId: $('#OrdertreatmentContent').val()
+                                },
+                                threapyStatus: $('#OrdertreatmentStatus').val(),
+                                doctorName: $('#OrderdoctorSelect').val(),
+                                payStatus: $('#OrderpayStatus').val(),
+                                payTool: $('#OrderpaymentMethod').val(),
+                                payDate: $('#OrderpaymentDate').val(),
+                                orderDate: $('#OrderorderDate').val(),
+                            };
+                            axios.post('/clinic/api/orders', formData)
+                                .then(function (response) {
+                                    $("#addOrderModal").modal("hide");
+                                    loadOrders(currentPage);
+                                    swal({
+                                        title: "新增成功!",
+                                        icon: "success",
+                                    });
+                                })
+                                .catch(function (error) {
+                                    console.log("Error錯誤發生", error);
+                                    swal({
+                                        title: "新增失敗,發生錯誤!",
+                                        text: "",
+                                        icon: "error",
+                                        buttons: true,
+                                        dangerMode: true,
+                                    })
+                                })
+                        } else {
+                            swal({
+                                title: "取消新增!",
+                            });
+                        }
+                    });
+            });
+        });
+        //點擊取消modal消失
+        $("#CancelBtn").on("click", function () {
+            $("#addOrderModal").modal("hide");
+        });
+
+        //修改訂單
+        $(document).on("click", ".btn-update", function () {
+            let order = $(this).data("order");
+            let orderNumber = $('upOrderNumber').val();
+            let upPatientId = order.patient.patientId;
+
+            //給預設值
+            $("#upOrderModal").modal("show");
+            $("#upOrderNumber").val(order.orderNumber);
+            $("#upOrderName").val(order.patient.patientName);
+            // $("#upTreatmentContent").val(order.treatment.treatmentName);
+            //強制選擇
+            $("#upTreatmentContent").val(order.treatment.treatmentId).trigger('change');
+            $("#upTherapyStatus").val(order.threapyStatus);
+            $("#upDoctorName").val(order.doctorName);
+            $("#upOrderPrice").val(order.treatment.price);
+            $("#upPayStatus").val(order.payStatus);
+            if (order.payTool == null || typeof (order.payTool) == 'undefined' || order.payTool == '') {
+                // $("#upPayTool").val("無").trigger('change');
+                $("#upPayTool").val("無");
+            } else {
+                $("#upPayTool").val(order.payTool);
+            }
+            //日期
+            $("#upPayDate").val(order.payDate);
+            $("#upOrderDate").val(order.orderDate);
+            //取消重複綁定
+            $("#upOrderForm").off("submit");
+            //提交修改表單
+
+            // 然後綁定新的 submit 事件處理程序
+            // $("#upOrderForm").on("submit", function (e) {
+            $("#saveUpOrder").on("click", function (e) {
+                // e.preventDefault();
+                swal({
+                    title: "確定要修改嗎？",
+                    text: "",
+                    icon: "info",
+                    buttons: true,
+                    dangerMode: true,
+                })
+                    .then((willDelete) => {
+                        if (willDelete) {
+                            let orderNumber = $('#upOrderNumber').val();
+                            let upformData = {
+                                orderNumber: $('#upOrderNumber').val(),
+                                patient: {
+                                    patientId: upPatientId
+                                },
+                                treatment: {
+                                    treatmentId: $('#upTreatmentContent').val()
+                                },
+                                treatmentItem: $('#upTreatmentContent').val(),
+                                threapyStatus: $('#upTherapyStatus').val(),
+                                doctorName: $('#upDoctorName').val(),
+                                quote: $('#upOrderPrice').val(),
+                                payStatus: $('#upPayStatus').val(),
+                                payTool: $('#upPayTool').val(),
+                                payDate: $('#upPayDate').val(),
+                                orderDate: $('#upOrderDate').val(),
+                            };
+                            axios.put(`/clinic/api/orders/${orderNumber}`, upformData)
+                                .then(function (response) {
+                                    $("#upOrderModal").modal("hide");
+                                    loadOrders(currentPage);
+                                    swal({
+                                        title: "修改成功!",
+                                        icon: "success",
+                                    });
+                                })
+                                .catch(function (error) {
+                                    console.log("Error錯誤發生", error);
+                                    swal({
+                                        title: "修改失敗,發生錯誤!",
+                                        text: "",
+                                        icon: "error",
+                                        buttons: true,
+                                        dangerMode: true,
+                                    })
+                                })
+                        } else {
+                            swal({
+                                title: "取消修改!",
+                            });
+                        }
+                    });
+            });
+            // 綁定刪除訂單的點擊事件
+            $("#deleteOrderBtn").off("click").on("click", function () {
+                swal({
+                    title: "確定要刪除嗎？",
+                    text: "一旦刪除，資料無法復原!",
+                    icon: "warning",
+                    buttons: true,
+                    dangerMode: true,
+                })
+                    .then((willDelete) => {
+                        if (willDelete) {
+                            let orderNumber = $('#upOrderNumber').val();
+                            axios.delete(`/clinic/api/orders/${orderNumber}`)
+                                .then(function (response) {
+                                    $('#upOrderModal').modal('hide');
+                                    loadOrders(currentPage);
+                                    swal({
+                                        title: "刪除成功",
+                                        icon: "success",
+                                    });
+                                })
+                                .catch(function (error) {
+                                    console.log('Error錯物', error);
+                                    swal({
+                                        title: "刪除失敗,發生錯誤!",
+                                        text: "",
+                                        icon: "error",
+                                        buttons: true,
+                                        dangerMode: true,
+                                    })
+                                })
+                        } else {
+                            swal({
+                                title: "取消刪除",
+                            });
+                        }
+                    });
+            });
+
+        });
+
+        //ECPAY
+        // 綠界科技支付請求
+        $(document).on('click', '.btn-pay', function () {
+            const orderNumber = $(this).data('ordernumber');
+
+            // 首先獲取訂單詳情
+            axios.get(`/clinic/api/orders/${orderNumber}`)
+                .then(response => {
+                    const order = response.data;
+                    // 發送支付請求
+                    return axios.post('/clinic/ecpay/checkout', order);
+                })
+                .then(response => {
+                    const formHtml = response.data;
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = formHtml;
+                    document.body.appendChild(tempDiv);
+                    const form = tempDiv.querySelector('form');
+                    if (form) {
+                        form.submit();
+                    } else {
+                        console.error('無法找到表單元素');
+                    }
+                })
+                .catch(error => {
+                    console.error('支付請求失敗:', error);
+                    alert('支付請求失敗，請稍後再試。');
+                });
+        });
+
+
+        //-----------------------------------以下是發送email的 JS-------------------------------------------
+        //    寄信功能༼ つ ◕_◕ ༽つ༼ つ ◕_◕ ༽つ༼ つ ◕_◕ ༽つ
+        $(document).on('click', '.btnSendMail', async function () {
+            const email = $(this).data('email');
+            // axios 的取消請求功能
+            const CancelToken = axios.CancelToken;
+            const source = CancelToken.source();
+
+            try {
+                // 確認發送
+                const willSend = await swal({
+                    title: '確認發送付款通知',
+                    text: `即將發送郵件至：${email}`,
+                    icon: 'warning',
+                    buttons: {
+                        cancel: {
+                            text: "取消",
+                            value: null,
+                            visible: true
+                        },
+                        confirm: {
+                            text: "確定發送",
+                            value: true
+                        }
+                    }
+                });
+
+                if (willSend) {
+                    // 發送中狀態
+                    swal({
+                        title: "處理中...",
+                        text: "正在發送郵件",
+                        icon: "info",
+                        buttons: false,
+                        // buttons: {
+                        //     cancel: {
+                        //         text: "取消發送",
+                        //         value: null,
+                        //         visible: true,
+                        //         className: "",
+                        //         closeModal: false,
+                        //     }
+                        // },
+                        closeOnClickOutside: false,
+                        closeOnEsc: false
+                    });
+
+                    // 發送郵件
+                    const response = await axios.post('/clinic/order/sendEmail', {
+                        email: email
+                    }, {cancelToken: source.token});
+
+                    if (response.status === 200) {
+                        // 發送成功
+                        await swal({
+                            title: "發送成功！",
+                            text: "付款通知已發送",
+                            icon: "success",
+                            timer: 1500,
+                            buttons: false
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('寄送信件時發生錯誤:', error);
+
+                // 錯誤處理
+                await swal({
+                    title: "發送失敗",
+                    text: error.response?.data || "發送郵件時發生錯誤",
+                    icon: "error",
+                    button: "確定"
+                });
+            }
+        });
+//    寄信功能༼ つ ◕_◕ ༽つ༼ つ ◕_◕ ༽つ༼ つ ◕_◕ ༽つ
+    });
+    // })
+</script>
+</body>
+</html>

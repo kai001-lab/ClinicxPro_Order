@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>訂單列表</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="https://i.postimg.cc/brVLsP09/medical-symbol.png" type="image/x-icon"/>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f4f8;
+        }
+
+        .pay-button {
+            display: inline-block;
+            background: #1d3d5e;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .pay-button:hover {
+            background-color: #2c5d8e;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            /*max-width: 800px;*/
+            /*margin: 0 auto;*/
+            /*padding: 20px;*/
+            /*padding-top: 2px;*/
+            /*margin-top: 20px;*/
+            /*background-color: white;*/
+            /*border-radius: 10px;*/
+            /*box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);*/
+        }
+
+        h2 {
+            color: #1d3d5e;
+            margin-bottom: 20px;
+        }
+
+        .order-card {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .status-paid {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .status-unpaid {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .order-details {
+            margin-bottom: 15px;
+        }
+
+        .order-actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .pagination a, .pagination span {
+            display: inline-block;
+            padding: 8px 16px;
+            margin: 0 5px;
+            background-color: #f1f1f1;
+            color: #333;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .pagination a:hover {
+            background-color: #ddd;
+        }
+
+        .pagination .current-page {
+            background-color: #1d3d5e;
+            color: white;
+        }
+        .back-button {
+            background: #1d3d5e;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            width: 100%;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .back-button:hover {
+            background: #2c5c8f;
+        }
+        .back-button a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            width: 100%;
+        }
+        .back-button {
+            background: #8b6d42;
+        }
+        .back-button:hover {
+            background: #9d8c56;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>訂單列表</h2>
+
+    <div th:if="${#lists.isEmpty(orders)}" style="text-align: center; padding: 20px;">
+        未找到相關訂單
+        <br>
+        <a th:href="@{/order/query}" style="color: #1d3d5e;">返回查詢</a>
+    </div>
+
+    <div class="order-card" th:each="order : ${orders}">
+        <div class="order-header">
+            <h3 th:text="'訂單編號: ' + ${order.orderNumber}"></h3>
+            <span th:class="${order.payStatus == 1 ? 'status-paid' : 'status-unpaid'}"
+                  th:text="${order.payStatus == 1 ? '已付款' : '未付款'}"></span>
+        </div>
+
+        <div class="order-details">
+            <span th:text="'療程: ' + ${order.treatment.treatmentName}"></span>
+            <br>
+            <span th:text="'醫師: ' + ${order.doctorName}"></span>
+            <br>
+            <span th:text="'費用: TWD ' + ${order.treatment.price}"></span>
+            <br>
+            <span th:text="'訂單日期: ' + ${#dates.format(order.orderDate, 'yyyy-MM-dd')}"></span>
+        </div>
+
+        <div class="order-actions" th:if="${order.payStatus == 0}">
+            <form th:action="@{/order/create-checkout}" method="post">
+                <input type="hidden" name="orderNumber" th:value="${order.orderNumber}">
+                <button type="submit" class="pay-button">前往付款</button>
+            </form>
+        </div>
+    </div>
+    <button class="back-button"><a href="/clinic/Customer">返回首頁</a></button>
+</div>
+<!--</div>-->
+</body>
+</html>

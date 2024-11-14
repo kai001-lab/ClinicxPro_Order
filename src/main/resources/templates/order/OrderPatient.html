@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org/">
+<head>
+    <meta charset="UTF-8"/>
+    <title>患者管理頁面</title>
+    <!--    我的font-awesome-->
+    <script
+            src="https://kit.fontawesome.com/47b671abbd.js"
+            crossorigin="anonymous"
+    ></script>
+    <!--引用css-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/6.10.3/sweetalert2.css"/>
+    <!--引用SweetAlert2.js-->
+    <!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/6.10.3/sweetalert2.js" type="text/javascript"></script>-->
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <style>
+        #content {
+            /*width: calc(90% - 250px);*/
+            margin-left: 350px;
+            /* margin-left: calc(20% - 250px); */
+            margin-top: 10px;
+            padding: 20px;
+            /* border: 5px solid red; */
+            height: 800px;
+        }
+
+        .btnAdd,
+        .btnAdd:focus {
+            position: relative;
+            z-index: 0;
+            /*min-width: 200px;*/
+            border: 2px solid currentColor;
+            border-radius: 48px;
+            color: #FF0FF0;
+            color: #9d8c56;
+            font-size: 1rem;
+            text-align: center;
+            text-decoration: none;
+            overflow: hidden;
+            transition: 0.2s transform ease-in-out;
+            will-change: transform;
+            padding: 10px 20px;
+        }
+
+        .btnAdd:after {
+            content: '';
+            display: block;
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            left: 0;
+            top: 0;
+            z-index: -1;
+            background-color: #ff0ff0;
+            background-color: #9d8c56;
+            border-radius: 3rem;
+            transform: translate(-100%, 0) rotate(10deg);
+            transform-origin: top left;
+            transition: 0.2s transform ease-out;
+            will-change: transform;
+        }
+
+        .btnAdd:hover:after {
+            transform: translate(0, 0);
+        }
+
+        .btnAdd:hover {
+            border: 2px solid transparent;
+            color: #FFFFFF;
+            transform: scale(1);
+            will-change: transform;
+        }
+
+        /*成功按鈕*/
+        #overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        #successAnimation {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        #confirmButton {
+            margin-top: 10px;
+            padding: 5px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /*#content {*/
+        /*    margin: 0 auto;*/
+        /*    padding: 20px;*/
+        /*    margin-left: 300px;*/
+        /*}*/
+
+        .btn-primary,
+        .btn-danger {
+            background-color: #007bff; /* Bootstrap 預設的主要顏色 */
+            opacity: 0.9; /* 設置透明度，0.6 表示 60% 不透明度 */
+        }
+
+        .btn-kai {
+            background-color: #3a6ea5;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{display/Model}"></div>
+<main>
+    <div class="container-fluid col-md-10" id="content">
+        <!-- 下面是我的功能-->
+        <div class="page-inner">
+            <div
+                    class="card-header col-auto col-10 col-lg-10 mt-3 p-2 rounded border"
+                    style="
+              margin-top: 2%;
+              background-color: #1d3d5e;
+              color: #f2f2f1;
+              border: 1px solid gray;
+            "
+            >
+                <div class="d-flex align-items-center">
+                    <h4 class="card-title playfair-display fs-4 border rounded p-2"
+                        style="background-color: #3a6ea5; color: #ffffff;">患者管理</h4>
+                    <!--                            class=" btn btn-primary btn-round btn-kai rounded ms-auto"-->
+                    <button
+                            id="addBtn"
+                            class="btnAdd  ms-auto"
+                    >
+                        <i class="fa-solid fa-square-plus"></i> 新增患者
+                    </button>
+                </div>
+            </div>
+            <!-- 搜尋區域 -->
+            <!-- 搜尋區域 -->
+            <!-- 搜尋區域 -->
+            <div class="row mt-2">
+                <div class="col-auto col-10 col-lg-10 p-2 rounded" style="width: 83%;margin-left: 3px">
+                    <div class="card" style="background-color: #f2f2f1">
+                        <div class="card-body">
+                            <!--                            <h5 class="card-title mb-4">搜尋訂單</h5>-->
+                            <div class="row g-3 justify-content-center align-items-center">
+                                <!-- 關鍵字搜尋 -->
+                                <div class="col-md-4 ">
+                                    <div class="input-group ">
+                                        <span class="input-group-text">搜尋患者 :</span><input type="text" class="form-control " id="Search" placeholder="輸入患者姓名..." data-searchtype="patientName">
+                                        <button class="btn btn-outline-secondary" type="button" id="SearchBtn">
+                                            <i class="fa-solid fa-magnifying-glass"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!---------------------------------------------------------------------------------------------------------------------------->
+            <!-- 下面是表格 -->
+            <!-- 下面是表格 -->
+            <!-- 下面是表格 -->
+            <div id="" class="row">
+                <div class="col-auto col-10 col-lg-10 mt-2">
+                    <div class="card" style="background-color: #f2f2f1">
+                        <div class="table-responsive">
+                            <table
+                                    id="patientList"
+                                    class="display table table-striped table-hover w-100"
+                                    style="padding-bottom: 0;margin-bottom: 0"
+                            >
+                                <thead>
+                                <tr>
+                                    <th class="border text-center">患者編號</th>
+                                    <th class="border text-center">姓名</th>
+                                    <th class="border text-center">身分證號</th>
+                                    <th class="border text-center">生日</th>
+                                    <th class="border text-center">性別</th>
+                                    <th class="border text-center">電話</th>
+                                    <th class="border text-center">地址</th>
+                                    <th class="border text-center">信箱</th>
+                                    <th class="border text-center" style="width: 14%">操作</i>
+                                    </th>
+                                    <!--                                    <th class="border text-center" style="width: 14%"><i class="fa-solid fa-wrench"></i>-->
+                                    <!--                                    </th>-->
+                                    <!-- <th id="upTime">訂單修改時間</th> -->
+                                </tr>
+                                </thead>
+                                <tbody id="patientTbody">
+                                <!--寫ajax  -->
+
+                                <!--寫ajax  -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!--                    下面是分頁的部分-->
+
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination  justify-content-end mt-3 " id="pagination">
+                            <li class="page-item " id="prevPage">
+                                <a class="page-link" href="#" tabindex="-1">上一頁</a>
+                            </li>
+                            <!-- JS動態插入 頁數 -->
+                            <!--.............-->
+                            <!-- JS動態插入 頁數 -->
+                            <li class="page-item" id="nextPage">
+                                <a class="page-link" href="#">下一頁</a>
+                            </li>
+                        </ul>
+                    </nav>
+                    <div class="text-end" id="pageInfo">
+<!--                        <input id="pageInfoNow" type="number" class="text-end" style="display: inline">-->
+<!--                        <div class="text-end" id="totalPageInfo"></div>-->
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</div>
+<!--這裏面放我的 Modal -->
+<!-- Modal1新增患者 -->
+<div id="addPatientModal" class="modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: #1d3d5e">
+                <h5 class="modal-title text-light">新增患者</h5>
+                <button
+                        id="addVal"
+                        class="btnAdd  ms-auto text-light"
+                        style="background: #9d8c56"
+                >
+                    一鍵帶入
+                </button>
+                <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
+                ></button>
+            </div>
+            <div class="modal-body">
+                <form id="PatientForm" action="" method="post">
+                    <input type="hidden" name="action" value="add"/>
+                    <div class="form-group">
+                        <label for="patientName">患者名稱 :</label>
+                        <input
+                                id="PatientName"
+                                name="patientName"
+                                type="text"
+                                class="form-control"
+                                placeholder="請輸入患者姓名"
+                                required
+                        />
+                    </div>
+                    <div class="form-group">
+                        <label for="PatientIdCard">身分證號碼 :</label>
+                        <input
+                                id="PatientIdCard"
+                                name="idCard"
+                                type="text"
+                                class="form-control"
+                                placeholder="請輸入身分證號碼"
+                                required
+                        />
+                    </div>
+                    <div class="form-group">
+                        <label for="PatientBirthday">患者生日 :</label>
+                        <input
+                                id="PatientBirthday"
+                                name="patientBirthday"
+                                type="date"
+                                class="form-control"
+                                placeholder="請輸入患者生日"
+                                required
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="PatientGender">患者性別 :</label>
+                        <select
+                                id="PatientGender"
+                                class="form-select form-control"
+                                name="patientGender"
+                                required
+                        >
+                            <option value="1">男</option>
+                            <option value="2">女</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="PatientPhone">患者電話 :</label>
+                        <input
+                                id="PatientPhone"
+                                name="patientPhone"
+                                type="tel"
+                                class="form-control"
+                                maxlength="10"
+                                placeholder="請輸入患者電話"
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="PatientAddress">患者地址 :</label>
+                        <input
+                                id="PatientAddress"
+                                name="patientAddress"
+                                type="text"
+                                class="form-control"
+                                placeholder="請輸入患者地址"
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="PatientEmail">患者信箱 :</label>
+                        <input
+                                id="PatientEmail"
+                                name="patientEmail"
+                                type="email"
+                                class="form-control"
+                                placeholder="請輸入患者信箱"
+                        />
+                    </div>
+
+
+                    <div
+                            class="card-action"
+                            style="display: flex; justify-content: center"
+                    >
+                        <!--                        <button-->
+                        <!--                                type="button"-->
+                        <!--                                id="CancelBtn"-->
+                        <!--                                class="btn btn-danger mt-2 me-4"-->
+                        <!--                        >-->
+                        <!--                            取消新增-->
+                        <!--                        </button>-->
+                        <button
+                                type="submit"
+                                id="upConfirmBtn"
+                                class="btn btn-success mt-2"
+                                style="margin-right: 20px"
+                        >
+                            新增患者
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!--MOdal2修改訂單 -->
+<div id="upPatientModal" class="modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: #1d3d5e">
+                <h5 class="modal-title text-light">修改資料</h5>
+                <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
+                ></button>
+            </div>
+            <div class="modal-body">
+                <form
+                        id="upPatientForm"
+                >
+                    <input type="hidden" name="action" value="update"/>
+
+                    <div class="form-group">
+                        <label for="patientNumber">患者編號 :</label>
+                        <input
+                                id="upPatientNumber"
+                                name="patientNumber"
+                                type="text"
+                                class="form-control bg-secondary text-white"
+                                placeholder="請輸入患者編號"
+                                th:readonly="true"
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="patientName">患者名稱 :</label>
+                        <input
+                                id="upPatientName"
+                                name="patientName"
+                                type="text"
+                                class="form-control"
+                                placeholder="請輸入患者姓名"
+                        />
+                    </div>
+                    <div class="form-group">
+                        <label for="PatientIdCard">身分證號碼 :</label>
+                        <input
+                                id="upPatientIdCard"
+                                name="idCard"
+                                type="text"
+                                class="form-control"
+                                placeholder="請輸入身分證號碼"
+                                required
+                        />
+                    </div>
+                    <div class="form-group">
+                        <label for="pateintAge">患者生日 :</label>
+                        <input
+                                id="upPatientBirthday"
+                                name="pateintAge"
+                                type="date"
+                                class="form-control"
+                                min="1"
+                                max="100"
+                                placeholder="請輸入患者生日"
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="patientGender">患者性別 :</label>
+                        <select
+                                id="upPatientGender"
+                                class="form-select form-control"
+                                name="patientGender"
+                        >
+                            <option value="1">男</option>
+                            <option value="2">女</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="patientPhone">患者電話 :</label>
+                        <input
+                                id="upPatientPhone"
+                                name="patientPhone"
+                                type="tel"
+                                class="form-control"
+                                maxlength="10"
+                                placeholder="請輸入患者電話"
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="patientAddress">患者地址 :</label>
+                        <input
+                                id="upPatientAddress"
+                                name="patientAddress"
+                                type="text"
+                                class="form-control"
+                                placeholder="請輸入患者地址"
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="patientEmail">患者信箱 :</label>
+                        <input
+                                id="upPatientEmail"
+                                name="patientEmail"
+                                type="email"
+                                class="form-control"
+                                placeholder="請輸入患者信箱"
+                        />
+                    </div>
+
+
+                    <div
+                            class="card-action"
+                            style="display: flex; justify-content: center"
+                    >
+                        <button
+                                type="submit"
+                                id="upConfirmBtn"
+                                class="btn btn-success mt-2"
+                                style="margin-right: 20px"
+                        >
+                            修改資料
+                        </button>
+                        <button type="button" class="btn btn-danger btn-delete mt-2"
+                                id="deletePatientBtn"
+                        >
+                            刪除資料
+                        </button>
+                        <!--                        <button-->
+                        <!--                                type="button"-->
+                        <!--                                id="upCancelBtn"-->
+                        <!--                                class="btn btn-danger mt-2"-->
+                        <!--                        >-->
+                        <!--                            取消修改-->
+                        <!--                        </button>-->
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!--===========================================下面是我的功能=====================================-->
+
+<script>
+    // $(function(){
+    //==============================================Page=================================
+    $(document).ready(function () {
+
+        //一開始傳page給後端 -> 從0開始
+        let currentPage = 0;
+        const pageSize = 10;
+        //儲存搜尋條件 避免搜尋後使用分頁功能時發生錯誤 !!
+        let searchParams = null;
+
+
+        //%%%%%% 跟後端取得資料 => 再呼叫 1.表單資料師生成 & 2.頁面控制的 function %%%%%%
+        function loadPatients(page) {
+            let url = 'findPatientsByPage';
+            let params = {page: page, size: pageSize};
+
+            //如果存在搜尋條件 => 根據搜啥得到啥
+            if (searchParams) {
+                // if (searchParams.startDate || searchParams.endDate) {
+                    // url = 'findOrdersByDateRange';
+                // } else {
+                    url = 'findPatientsBySerach';
+                // }
+                params = {...params, ...searchParams};
+            }
+
+
+            // axios.get(`findOrdersByPage?page=${page}&size=${pageSize}`)
+            //根據不同搜尋條件回傳不同的結果
+            axios.get(url, {params: params})
+                .then(response => {
+                    const data = response.data;
+                    TableHTML(data.content);
+                    Pagination(data);
+                })
+                .catch(error => console.error('親!沒有拿到資料喔 QQ', error));
+        }
+
+        //分頁的控制
+        function Pagination(pageData) {
+            const $pagination = $('#pagination');
+            const $prevPage = $('#prevPage');
+            const $nextPage = $('#nextPage');
+
+            currentPage = pageData.number;
+            const totalPages = pageData.totalPages;
+
+            // 清除現有的頁碼按鈕
+            //除了 prevPage 跟 nextPage 以外的
+            $pagination.find('li.page-item:not(#prevPage):not(#nextPage)').remove();
+
+            // 更新上一頁按鈕
+            if (pageData.first) {
+                $prevPage.addClass('disabled');
+            } else {
+                $prevPage.removeClass('disabled');
+            }
+            // 更新下一頁按鈕
+            // 如果是最後一頁或總頁數小於等於1，禁用下一頁
+            if (pageData.last || totalPages <= 1) {
+                $nextPage.addClass('disabled');
+            } else {
+                $nextPage.removeClass('disabled');
+            }
+
+            // 根據總頁數生成按鈕
+            if (totalPages > 1) {
+                const start = Math.max(0, currentPage - 2);
+                const end = Math.min(totalPages - 1, currentPage + 2);
+
+                for (let i = start; i <= end; i++) {
+                    const $pageItem = $('<li>').addClass('page-item');
+                    const $pageLink = $('<a>').addClass('page-link').attr('href', '#').text(i + 1);
+
+                    if (i === currentPage) {
+                        $pageItem.addClass('active');
+                    }
+
+                    $pageLink.on('click', (e) => {
+                        e.preventDefault();
+
+                        loadPatients(i);
+
+                    });
+
+                    $pageItem.append($pageLink);
+                    $nextPage.before($pageItem);
+                }
+            }
+            // 更新頁面信息
+            let pageInfoNow = currentPage + 1;
+
+            // $('#pageInfoNow').val(pageInfoNow);
+            // $('#totalPageInfo').text(`共 ${totalPages} 頁`)
+            // $('#pageInfo').text(`第 ${pageInfoNow} 頁，共 ${totalPages} 頁`);
+            $('#pageInfo').text(`第 ${currentPage + 1} 頁，共 ${totalPages} 頁`);
+        }
+
+        //放在初始化物件後 ->  currentPage
+        // 一開始載入表格資料
+        loadPatients(currentPage);
+
+// 綁定上一頁和下一頁的點擊事件
+        $('#prevPage').on('click', function (e) {
+            e.preventDefault();
+            if (!$(this).hasClass('disabled')) {
+                loadPatients(currentPage - 1);
+            }
+        });
+
+        $('#nextPage').on('click', function (e) {
+            e.preventDefault();
+            if (!$(this).hasClass('disabled')) {
+                loadPatients(currentPage + 1);
+            }
+        });
+
+
+        //表格產生資料的 function
+        function TableHTML(patients) {
+            let html = "";
+            patients.forEach((patient) => {
+                //可讓生成時依照狀態變色 😍
+                // const ThreapyColor = patient.threapyStatus == 1 ? "color:green" : "color:red";
+                // const PayColor = patient.payStatus == 1 ? "color:green" : "color:red";
+                // const btnDisplay = patient.payStatus == 1 ?"display:none":"";
+
+                html += `<tr>
+                <td class="border text-center">${patient.patientId}</td>
+                <td class="border text-center">${patient.patientName}</td>
+                <td class="border text-center">${patient.patientIdCard}</td>
+                <td class="border text-center">${patient.patientBirthday}</td>
+                <td class="border text-center">${patient.patientGender === 1 ? '男' : '女'}</td>
+                <td class="border text-center">${patient.patientPhone}</td>
+                <td class="border text-center">${patient.patientAddress}</td>
+                <td class="border text-center">${patient.patientEmail}</td>
+                <td class="border  text-center">
+                  <button class="btnAdd btn-update" data-patient='${JSON.stringify(patient)}'><i class="fa-solid fa-wrench">編輯資料</i></button>
+                </td>
+                </tr>`;
+            });
+            $("#patientTbody").html(html);
+        }
+
+
+        // $(document).ready(function () {
+        //修改訂單
+        $(document).on("click", ".btn-update", function () {
+            let patient = $(this).data("patient");
+            let patientNumber = $('#upPatientNumber').val();
+
+            $("#upPatientModal").modal("show");
+            //給預設值
+            $("#upPatientNumber").val(patient.patientId);
+            $('#upPatientIdCard').val(patient.patientIdCard)
+            $("#upPatientName").val(patient.patientName);
+            $("#upPatientBirthday").val(patient.patientBirthday);
+            $("#upPatientGender").val(patient.patientGender);
+            $("#upPatientPhone").val(patient.patientPhone);
+            $("#upPatientAddress").val(patient.patientAddress);
+            $("#upPatientEmail").val(patient.patientEmail);
+
+            //取消重複綁定
+            $("#upPatientForm").off("submit");
+            //提交修改表單
+            // 然後綁定新的 submit 事件處理程序
+            $("#upPatientForm").on("submit", function (e) {
+                let patientNumber = $('#upPatientNumber').val();
+                let upformData = {
+                    patientId: $('#upPatientNumber').val(),
+                    patientName: $('#upPatientName').val(),
+                    patientIdCard: $('#upPatientIdCard').val(),
+                    patientBirthday: $('#upPatientBirthday').val(),
+                    patientGender: $('#upPatientGender').val(),
+                    patientPhone: $('#upPatientPhone').val(),
+                    patientAddress: $('#upPatientAddress').val(),
+                    patientEmail: $('#upPatientEmail').val(),
+                };
+
+                e.preventDefault();
+                swal({
+                    title: "確定要修改嗎？",
+                    text: "",
+                    icon: "warning",
+                    buttons: true,
+                    dangerMode: true,
+                })
+                    .then((willDelete) => {
+                        if (willDelete) {
+                            axios.put(`/clinic/api/patients/${patientNumber}`, upformData)
+                                .then(function (response) {
+                                    $("#upPatientModal").modal("hide");
+                                    loadPatients(currentPage);
+                                    swal({
+                                        title: "修改成功",
+                                        icon: "success",
+                                    });
+                                })
+                                .catch(function (error) {
+                                    console.log("修改失敗", error);
+                                    swal({
+                                        title: "修改失敗,發生錯誤!",
+                                        text: "",
+                                        icon: "error",
+                                        buttons: true,
+                                        dangerMode: true,
+                                    })
+                                    // alert("修改失敗，發生錯誤");
+                                })
+
+                        } else {
+                            swal({
+                                title: "取消修改",
+                            });
+                        }
+                    });
+                // if (confirm("確定要修改嗎？")) {
+                //     axios.put(`/clinic/api/patients/${patientNumber}`, upformData)
+                //         .then(function (response) {
+                //             alert("修改成功");
+                //             $("#upPatientModal").modal("hide");
+                //             loadPatients(currentPage);
+                //         })
+                //         .catch(function (error) {
+                //             console.log("修改失敗", error);
+                //             alert("修改失敗，發生錯誤");
+                //         })
+                //     // this.submit();
+                // } else {
+                //     alert("取消修改");
+                // }
+            });
+            // 綁定刪除訂單的點擊事件
+            $("#deletePatientBtn").off("click").on("click", function () {
+                swal({
+                    title: "確定要刪除嗎？",
+                    text: "一旦刪除，資料無法復原!",
+                    icon: "warning",
+                    buttons: true,
+                    dangerMode: true,
+                })
+                    .then((willDelete) => {
+                        if (willDelete) {
+                            let patientNumber = $('#upPatientNumber').val();
+                            axios.delete(`/clinic/api/patients/${patientNumber}`)
+                                .then(function (response) {
+                                    $('#upPatientModal').modal('hide');
+                                    loadPatients(currentPage);
+                                    swal({
+                                        title: "刪除成功",
+                                        icon: "success",
+                                    });
+                                })
+                                .catch(function (error) {
+                                    console.log('Error錯物', error);
+                                    swal({
+                                        title: "刪除失敗,發生錯誤!",
+                                        text: "",
+                                        icon: "error",
+                                        buttons: true,
+                                        dangerMode: true,
+                                    })
+                                })
+                        } else {
+                            swal({
+                                title: "取消刪除",
+                            });
+                        }
+                    });
+            });
+            //點擊取消modal消失
+            // $("#upCancelBtn").on("click", function () {
+            //     $("#upOrderModal").modal("hide");
+            // });
+        });
+        //新增患者按鈕
+        $('body').on("click", "#addBtn", function () {
+
+            $("#addPatientModal").modal("show");
+
+            //可能會跳重複綁定事件的錯誤
+            $("#PatientForm").off("submit");
+            //提交表單
+            $("#PatientForm").on("submit", function (e) {
+                e.preventDefault();
+
+                swal({
+                    title: "確定要新增嗎？",
+                    text: "",
+                    icon: "info",
+                    buttons: true,
+                    dangerMode: true,
+                })
+                    .then((willDelete) => {
+                        if (willDelete) {
+                            let formData = {
+                                patientId: '',
+                                patientName: $('#PatientName').val(),
+                                patientIdCard: $('#PatientIdCard').val(),
+                                patientBirthday: $('#PatientBirthday').val(),
+                                patientGender: $('#PatientGender').val(),
+                                patientPhone: $('#PatientPhone').val(),
+                                patientAddress: $('#PatientAddress').val(),
+                                patientEmail: $('#PatientEmail').val(),
+                            };
+                            axios.post('/clinic/api/patients', formData)
+                                .then(function (response) {
+                                    $("#addPatientModal").modal("hide");
+                                    // alert("新增成功");
+                                    loadPatients(currentPage);
+                                    swal({
+                                        title: "新增成功!",
+                                        icon: "success",
+                                    });
+                                })
+                                .catch(function (error) {
+                                    console.log("Error錯誤發生", error);
+                                    swal({
+                                        title: "新增失敗,發生錯誤!",
+                                        text: "",
+                                        icon: "error",
+                                        buttons: true,
+                                        dangerMode: true,
+                                    })
+                                    // alert("新增失敗,發生錯誤!")
+                                })
+                        } else {
+                            swal({
+                                title: "取消新增!",
+                            });
+                        }
+                    });
+
+                // //點擊取消modal消失
+                // $("#CancelBtn").on("click", function () {
+                //     $("#addPatientModal").modal("hide");
+                // });
+
+
+            });
+        })
+        // < !--下拉選單的js & 搜尋的功能-- >
+        // < !--下拉選單的js & 搜尋的功能-- >
+        // < !--下拉選單的js & 搜尋的功能-- >
+
+        // 搜尋選單字體改變
+        let SearchType;
+        $(".choose").on("click", function () {
+            let BtnText = $(this).text();
+            $("#dropdownMenuButton1").text(BtnText);
+            SearchType = $(this).data('searchtype');
+        });
+        // 單項搜尋功能
+        // 單項搜尋功能
+        $('#SearchBtn').on('click', function () {
+            let input = $('#Search').val().trim();
+            // let
+            // if (!SearchType) {
+            //     alert("輸入搜尋條件 😒😒")
+            //     return;
+            // }
+            // 每次搜尋重置 !!!
+            // 每次搜尋重置 !!!
+            // 每次搜尋重置 !!!
+            currentPage = 0;
+            searchParams = {["patientName"]: input};
+            loadPatients(currentPage);
+        })
+    })
+</script>
+<script>
+    // 一鍵帶入
+    $("#addVal").on("click", function () {
+        // 帶入的值
+        let testData = {
+            name: "王小明",
+            idCard: 'N123456789',
+            birthday: '1989-02-03',
+            gender: "1",
+            phone: "0912345678",
+            address: "台北市信義區信義路五段7號",
+            email: "testWong1989@gmail.com",
+        };
+        //帶入值
+        $("#PatientName").val(testData.name);
+        $("#PatientIdCard").val(testData.idCard);
+        $("#PatientBirthday").val((testData.birthday));
+        $("#PatientGender").val(testData.gender);
+        $("#PatientPhone").val(testData.phone);
+        $("#PatientAddress").val(testData.address);
+        $("#PatientEmail").val(testData.email);
+
+    });
+
+</script>
+
+<!--<script>-->
+<!--    // < !&#45;&#45;下拉選單的js & 搜尋的功能&#45;&#45; >-->
+<!--    // < !&#45;&#45;下拉選單的js & 搜尋的功能&#45;&#45; >-->
+<!--    // < !&#45;&#45;下拉選單的js & 搜尋的功能&#45;&#45; >-->
+
+<!--    // 搜尋選單字體改變-->
+<!--    let SearchType;-->
+<!--    $(".choose").on("click", function () {-->
+<!--        let BtnText = $(this).text();-->
+<!--        $("#dropdownMenuButton1").text(BtnText);-->
+<!--        SearchType = $(this).data('searchtype');-->
+<!--    });-->
+<!--    // 單項搜尋功能-->
+<!--    // 單項搜尋功能-->
+<!--    $('#SearchBtn').on('click', function () {-->
+<!--        let input = $('#Search').val().trim();-->
+
+<!--        // if (!SearchType) {-->
+<!--        //     alert("輸入搜尋條件 😒😒")-->
+<!--        //     return;-->
+<!--        // }-->
+<!--        // 每次搜尋重置 !!!-->
+<!--        // 每次搜尋重置 !!!-->
+<!--        // 每次搜尋重置 !!!-->
+<!--        currentPage = 0;-->
+<!--        searchParams = {[SearchType]: input};-->
+<!--        (currentPage);-->
+<!--    })-->
+<!--    // // 綁定療程進度搜尋按鈕-->
+<!--    // $('#SearchByStatusBtn').on('click', function () {-->
+<!--    //     let threapyStatus = $('#threapyStatus').val(); // 療程進度-->
+<!--    //     currentPage = 0;-->
+<!--    //     searchParams = {threapyStatus: threapyStatus}; // 設置搜尋條件-->
+<!--    //     loadOrders(currentPage);-->
+<!--    // });-->
+<!--    // // 綁定付款狀態搜尋按鈕-->
+<!--    // $('#SearchByStatusBtn2').on('click', function () {-->
+<!--    //     let payStatus = $('#payStatus').val(); // 付款狀態-->
+<!--    //     currentPage = 0;-->
+<!--    //     searchParams = {payStatus: payStatus}; // 設置搜尋條件-->
+<!--    //     loadOrders(currentPage);-->
+<!--    // });-->
+<!--    //-->
+<!--    // // 日期區間搜尋功能-->
+<!--    // // 日期區間搜尋功能-->
+<!--    // $('#SearchBtn2').on('click', function () {-->
+<!--    //     let startDate = $('#startDate').val();-->
+<!--    //     let endDate = $('#endDate').val();-->
+<!--    //-->
+<!--    //     //兩個都要選擇-->
+<!--    //     if (!startDate || !endDate) {-->
+<!--    //         alert("請選擇完整的日期區間");-->
+<!--    //         return;-->
+<!--    //     }-->
+<!--    //     // 確保結束日期不早於開始日期 ❤️-->
+<!--    //     if (new Date(endDate) < new Date(startDate)) {-->
+<!--    //         alert("結束日期不能早於開始日期!!!");-->
+<!--    //         return;-->
+<!--    //     }-->
+<!--    //     // 每次搜尋重置 !!!-->
+<!--    //     // 每次搜尋重置 !!!-->
+<!--    //     // 每次搜尋重置 !!!-->
+<!--    //     currentPage = 0;-->
+<!--    //     searchParams = {startDate: startDate, endDate: endDate};-->
+<!--    //     loadOrders(currentPage);-->
+<!--    // });-->
+
+<!--</script>-->
+</body>
+</html>
